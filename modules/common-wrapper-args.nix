@@ -12,13 +12,9 @@ in
 {
   options = {
     wrapFlags = mkOption {
-      type = flagsType;
-      default = [ ];
-      description = "Structured flags passed to makeWrapper.";
-      example = [
-        "--argv0"
-        "myprog"
-      ];
+      type = with types; separatedString " ";
+      readOnly = true;
+      description = "(Read-only) Final flags to wrap with";
     };
     appendFlags = mkOption {
       type = flagsType;
@@ -90,31 +86,34 @@ in
 
   config = {
     wrapFlags =
-      (flatten (
-        map (f: [
-          "--add-flag"
-          f
-        ]) config.prependFlags
+      (lib.escapeShellArgs (
+        (flatten (
+          map (f: [
+            "--add-flag"
+            f
+          ]) config.prependFlags
+        ))
+        # Force the eval of config.flags to trigger throw
+        ++ (flatten (
+          map (f: [
+            "--add-flag"
+            f
+          ]) config.flags
+        ))
+        ++ (flatten (
+          map (f: [
+            "--append-flag"
+            f
+          ]) config.appendFlags
+        ))
+        ++ (lib.optionals (config.pathAdd != [ ]) [
+          "--prefix"
+          "PATH"
+          ":"
+          (lib.makeBinPath config.pathAdd)
+        ])
+        ++ (flatten (map (e: e.asFlags) (attrValues config.env)))
       ))
-      # Force the eval of config.flags to trigger throw
-      ++ (flatten (
-        map (f: [
-          "--add-flag"
-          f
-        ]) config.flags
-      ))
-      ++ (flatten (
-        map (f: [
-          "--append-flag"
-          f
-        ]) config.appendFlags
-      ))
-      ++ (lib.optionals (config.pathAdd != [ ]) [
-        "--prefix"
-        "PATH"
-        ":"
-        (lib.makeBinPath config.pathAdd)
-      ])
-      ++ (flatten (map (e: e.asFlags) (attrValues config.env)));
+      + config.extraWrapperFlags;
   };
 }
