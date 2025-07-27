@@ -11,7 +11,7 @@ let
         ./modules/many-wrappers.nix
       ] ++ modules;
       specialArgs = {
-        inherit pkgs;
+        pkgs = import ./pkgs/extended.nix pkgs;
       } // specialArgs;
     };
 in
@@ -27,8 +27,9 @@ in
           module
         ];
         specialArgs = {
-          inherit pkgs;
+          pkgs = import ./pkgs/extended.nix pkgs;
         };
       }).config.wrapped;
   };
+  helpers = pkgs: import ./pkgs { inherit pkgs; };
 }

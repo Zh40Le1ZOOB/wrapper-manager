@@ -172,6 +172,11 @@ https://github.com/viperML/wrapper-manager/issues
 
 ## Changelog
 
+- 2025-07-27
+  - Separate wrapper build helper from module system
+  - Add `helpers` output, currently has `mkWrapper`
+  - `wrapFlags` now read-only for access to final flags
+
 - 2025-06-19
   - Full rewrite
   - `flags` has been removed in favor of `prependFlags`
