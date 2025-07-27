@@ -15,7 +15,7 @@ wrapper-manager.lib {
       wrappers.discord = {
         basePackage = pkgs.discord;
 
-        env.NIXOS_OZONE_WL.value = "1";
+        envVars.NIXOS_OZONE_WL.value = "1";
         prependFlags = [
           "--disable-gpu"
         ];
@@ -61,7 +61,7 @@ wrapper-manager.lib {
 
       wrappers.git = {
         basePackage = pkgs.git;
-        env.FOO.value = "BAR";
+        envVars.FOO.value = "BAR";
         programs.scalar = { };
       };
 

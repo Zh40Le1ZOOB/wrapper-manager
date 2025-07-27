@@ -70,13 +70,13 @@ in
             (lib.warn ''
               ${
                 lib.showOption [
-                  "env"
+                  "envVars"
                   config.name
                   "value"
                 ]
               } is null (indicating unsetting the variable), but ${
                 lib.showOption [
-                  "env"
+                  "envVars"
                   config.name
                   "force"
                 ]

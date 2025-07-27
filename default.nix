@@ -11,9 +11,17 @@ let
         ./modules/many-wrappers.nix
       ] ++ modules;
       specialArgs = {
-        inherit pkgs;
+        pkgs = extendPkgs pkgs;
       } // specialArgs;
     };
+
+  getPkgs =
+    pkgs:
+    pkgs.lib.packagesFromDirectoryRecursive {
+      inherit (pkgs) callPackage newScope;
+      directory = ./pkgs;
+    };
+  extendPkgs = pkgs: pkgs.extend (_: prev: getPkgs prev);
 in
 {
   lib = {
@@ -27,8 +35,9 @@ in
           module
         ];
         specialArgs = {
-          inherit pkgs;
+          pkgs = extendPkgs pkgs;
         };
       }).config.wrapped;
   };
+  inherit getPkgs;
 }

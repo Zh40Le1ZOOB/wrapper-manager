@@ -28,7 +28,7 @@
       "--config"
       ./config.nu
     ];
-    env.STARSHIP_CONFIG.value = ../starship.toml;
+    envVars.STARSHIP_CONFIG.value = ../starship.toml;
     pathAdd = [
       pkgs.starship
       pkgs.carapace
@@ -119,7 +119,7 @@ let
   # Wrap a singular package
   myGit = wrapper-manager.lib.wrapWith pkgs {
     basePackage = pkgs.git;
-    env.GIT_CONFIG.value = ./gitconfig;
+    envVars.GIT_CONFIG.value = ./gitconfig;
   };
   #=> «derivation /nix/store/...»
 in
@@ -171,6 +171,12 @@ These are some examples of wrapper-manager used in the wild. Feel free to PR you
 https://github.com/viperML/wrapper-manager/issues
 
 ## Changelog
+
+- 2025-08-13
+  - Separate wrapper build helper from module system
+  - Add `helpers` output, currently has `mkWrapper`
+  - `wrapFlags` now read-only for access to final flags
+  - `env` has been renamed to `envVars`
 
 - 2025-06-19
   - Full rewrite

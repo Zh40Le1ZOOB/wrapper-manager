@@ -5,20 +5,23 @@
   ...
 }:
 let
-  inherit (lib) mkOption types flatten;
+  inherit (lib)
+    mkRenamedOptionModule
+    mkOption
+    types
+    flatten
+    ;
   inherit (builtins) attrValues;
   flagsType = with types; listOf (coercedTo anything (x: "${x}") str);
 in
 {
+  imports = [ (mkRenamedOptionModule [ "env" ] [ "envVars" ]) ];
+
   options = {
     wrapFlags = mkOption {
-      type = flagsType;
-      default = [ ];
-      description = "Structured flags passed to makeWrapper.";
-      example = [
-        "--argv0"
-        "myprog"
-      ];
+      type = with types; separatedString " ";
+      readOnly = true;
+      description = "(Read-only) Final flags to wrap with";
     };
     appendFlags = mkOption {
       type = flagsType;
@@ -51,7 +54,7 @@ in
         ["--config-file" ./config.toml]
       '';
     };
-    env = mkOption {
+    envVars = mkOption {
       type = with types; attrsOf (submodule ./env-type.nix);
       default = { };
       description = "Structured configuration for environment variables.";
@@ -90,31 +93,34 @@ in
 
   config = {
     wrapFlags =
-      (flatten (
-        map (f: [
-          "--add-flag"
-          f
-        ]) config.prependFlags
+      (lib.escapeShellArgs (
+        (flatten (
+          map (f: [
+            "--add-flag"
+            f
+          ]) config.prependFlags
+        ))
+        # Force the eval of config.flags to trigger throw
+        ++ (flatten (
+          map (f: [
+            "--add-flag"
+            f
+          ]) config.flags
+        ))
+        ++ (flatten (
+          map (f: [
+            "--append-flag"
+            f
+          ]) config.appendFlags
+        ))
+        ++ (lib.optionals (config.pathAdd != [ ]) [
+          "--prefix"
+          "PATH"
+          ":"
+          (lib.makeBinPath config.pathAdd)
+        ])
+        ++ (flatten (map (e: e.asFlags) (attrValues config.envVars)))
       ))
-      # Force the eval of config.flags to trigger throw
-      ++ (flatten (
-        map (f: [
-          "--add-flag"
-          f
-        ]) config.flags
-      ))
-      ++ (flatten (
-        map (f: [
-          "--append-flag"
-          f
-        ]) config.appendFlags
-      ))
-      ++ (lib.optionals (config.pathAdd != [ ]) [
-        "--prefix"
-        "PATH"
-        ":"
-        (lib.makeBinPath config.pathAdd)
-      ])
-      ++ (flatten (map (e: e.asFlags) (attrValues config.env)));
+      + config.extraWrapperFlags;
   };
 }
