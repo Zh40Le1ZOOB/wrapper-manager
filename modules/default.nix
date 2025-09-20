@@ -77,7 +77,10 @@ in
           ./wrapper.nix
         ];
       });
-      description = "Wrappers to create.";
+      description = ''
+        Wrappers to create.
+
+        Also a collection of [modular modules](#modular-modules) that are configured as wrappers.'';
       example = lib.literalExpression ''
         {
           hello = {
